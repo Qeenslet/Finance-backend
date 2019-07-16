@@ -40,9 +40,12 @@ class Model
     {
         if (!$sqlite) {
             if (!empty($settings['port'])) {
-                $dsn = "{$settings['type']}:host={$settings['host']};port={$settings['port']};dbname={$settings['db']};charset={$settings['charset']}";
+                $dsn = "{$settings['type']}:host={$settings['host']};port={$settings['port']};dbname={$settings['db']}";
             } else {
-                $dsn = "{$settings['type']}:host={$settings['host']};dbname={$settings['db']};charset={$settings['charset']}";
+                $dsn = "{$settings['type']}:host={$settings['host']};dbname={$settings['db']}";
+            }
+            if ($settings['charset'] && $settings['type'] !== 'pgsql') {
+                $dsn .= ";charset={$settings['charset']}";
             }
 
             $options = [
