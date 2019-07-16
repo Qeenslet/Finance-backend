@@ -10,19 +10,17 @@ class Controller
     public function __construct()
     {
         $this->settings = require_once ('config.php');
-        $this->settings['host'] = getenv('DATABASE_HOST') ? : $this->settings['host'];
-        $this->settings['type'] = getenv('DATABASE_TYPE') ? : $this->settings['type'];
-        $this->settings['port'] = getenv('DATABASE_PORT') ? : $this->settings['port'];
-        $this->settings['user'] = getenv('DATABASE_USER') ? : $this->settings['user'];
-        $this->settings['pass'] = getenv('DATABASE_PASS') ? : $this->settings['pass'];
-        $this->settings['db'] = getenv('DATABASE_NAME') ? : $this->settings['db'];
+        $this->settings['database']['host'] = getenv('DATABASE_HOST') ? : $this->settings['database']['host'];
+        $this->settings['database']['type'] = getenv('DATABASE_TYPE') ? : $this->settings['database']['type'];
+        $this->settings['database']['port'] = getenv('DATABASE_PORT') ? : $this->settings['database']['port'];
+        $this->settings['database']['user'] = getenv('DATABASE_USER') ? : $this->settings['database']['user'];
+        $this->settings['database']['pass'] = getenv('DATABASE_PASS') ? : $this->settings['database']['pass'];
+        $this->settings['database']['db'] = getenv('DATABASE_NAME') ? : $this->settings['database']['db'];
         try {
             $this->model = Model::getConnection($this->settings);
         } catch (Exception $e) {
-            echo '<pre>'; print_r($this->settings); echo '</pre>';
-            //$this->handleError($e);
-            //
-            //return;
+            $this->handleError($e);
+            return;
         }
     }
 
