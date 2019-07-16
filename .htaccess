@@ -1,0 +1,26 @@
+RewriteEngine on
+Options +FollowSymlinks
+
+RewriteCond %{REQUEST_URI} ^(.*\/tests\/.*)$ [OR]
+RewriteCond %{REQUEST_URI} ^(.*\/general\/help\/.*)$ [OR]
+RewriteCond %{REQUEST_URI} ^(.*\/fonts\/.*)$ [OR]
+RewriteCond %{REQUEST_FILENAME} ^(.*\.swf)$ [OR]
+RewriteCond %{REQUEST_FILENAME} ^(.*\.jpg)$ [OR]
+RewriteCond %{REQUEST_FILENAME} ^(.*\.png)$ [OR]
+RewriteCond %{REQUEST_FILENAME} ^(.*\.gif)$ [OR]
+RewriteCond %{REQUEST_FILENAME} ^(.*\.css)$ [OR]
+RewriteCond %{REQUEST_FILENAME} ^(.*\.eot)$ [OR]
+RewriteCond %{REQUEST_FILENAME} ^(.*\.otf)$ [OR]
+RewriteCond %{REQUEST_FILENAME} ^(.*\.ttc)$ [OR]
+RewriteCond %{REQUEST_FILENAME} ^(.*\.ttf)$ [OR]
+RewriteCond %{REQUEST_FILENAME} ^(.*\.woff)$ [OR]
+RewriteCond %{REQUEST_FILENAME} ^(.*\.woff2)$ [OR]
+RewriteCond %{REQUEST_FILENAME} ^(.*\.js)$
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^(.*)$ - [L]
+
+RewriteRule ^(.*)$ index.php
+
+# HTID:10072670: DO NOT REMOVE OR MODIFY THIS LINE AND THE LINES BELOW
+php_value display_errors 1
+# DO NOT REMOVE OR MODIFY THIS LINE AND THE LINES ABOVE HTID:10072670:
