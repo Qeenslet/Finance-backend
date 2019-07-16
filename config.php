@@ -2,6 +2,7 @@
 return [
     'database' => [
         'host' => 'mysql',
+        'type' => 'mysql',
         'port' => '',
         'db' => 'my_db',
         'user' => 'root',

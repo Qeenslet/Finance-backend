@@ -10,6 +10,12 @@ class Controller
     public function __construct()
     {
         $this->settings = require_once ('config.php');
+        $this->settings['host'] = getenv('DATABASE_HOST') ? : $this->settings['host'];
+        $this->settings['type'] = getenv('DATABASE_TYPE') ? : $this->settings['type'];
+        $this->settings['port'] = getenv('DATABASE_PORT') ? : $this->settings['port'];
+        $this->settings['user'] = getenv('DATABASE_USER') ? : $this->settings['user'];
+        $this->settings['pass'] = getenv('DATABASE_PASS') ? : $this->settings['pass'];
+        $this->settings['db'] = getenv('DATABASE_NAME') ? : $this->settings['db'];
         try {
             $this->model = Model::getConnection($this->settings);
         } catch (Exception $e) {
