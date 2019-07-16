@@ -5,6 +5,7 @@ require_once ('Logger.php');
 class Router
 {
     private $uri;
+    private $api_routes = [];
     private $routes = [];
     private $controller;
 
@@ -14,29 +15,37 @@ class Router
         $this->controller = $controller;
     }
 
-    public function addRoute($route, $action)
+    public function addAPIRoute($route, $action)
     {
         $route = str_replace('/', '\/', $route);
         $route = '/^\/(.*)' . $route . '$/';
-        $this->routes[$route] = $action;
+        $this->api_routes[$route] = $action;
     }
 
+    public function addRoute($route, $action)
+    {
+        $this->routes[$route] = $action;
+    }
 
     /**
      * @throws Exception
      */
     private function parseRoute()
     {
-        foreach ($this->routes as $route => $action) {
+        foreach ($this->api_routes as $route => $action) {
             if (preg_match($route, $this->uri, $matches)) {
                 Logger::log('Incoming: ' . $this->uri);
                 $this->controller->{$action}(new Request($matches[1]));
                 return;
             }
         }
-        if ($this->uri === '/') $this->controller->actionIndex();
-        else
-            throw new Exception('Wrong API call: ' . $this->uri, 404);
+        foreach ($this->routes as $r => $a) {
+            if ($this->uri === $r) {
+                $this->controller->{$a}();
+                return;
+            }
+        }
+        throw new Exception('Wrong API call: ' . $this->uri, 404);
     }
 
 

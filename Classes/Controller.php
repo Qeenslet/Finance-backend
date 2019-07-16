@@ -171,4 +171,11 @@ class Controller
         header('Content-Type: application/json');
         echo json_encode($results);
     }
+
+
+
+    public function generateAPIKey()
+    {
+        echo 'HERE I do generate API key!!!';
+    }
 }
