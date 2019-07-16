@@ -19,7 +19,10 @@ class Controller
         try {
             $this->model = Model::getConnection($this->settings);
         } catch (Exception $e) {
-            $this->handleError($e);
+            echo '<pre>'; print_r($this->settings); echo '</pre>';
+            //$this->handleError($e);
+            //
+            //return;
         }
     }
 
