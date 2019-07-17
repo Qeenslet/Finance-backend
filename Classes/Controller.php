@@ -133,7 +133,11 @@ class Controller
         $total = $this->model->fetchOne("SELECT COUNT(expense_id) 
                                                 FROM expenses 
                                                 WHERE external_key = :key", $request->getQueryKey());
-        $sum = $this->model->fetchOne("SELECT SUM(expense_sum) FROM expenses WHERE external_key = :key", $request->getQueryKey());
+        $sumRaw = $this->model->fetchAll("SELECT expense_sum FROM expenses WHERE external_key = :key", $request->getQueryKey());
+        $sum = 0;
+        foreach ($sumRaw as $raw) {
+            $sum += floatval($raw['expense_sum']);
+        }
         $data['entries'] = intval($total);
         $data['sum'] = !empty($sum) ? $sum : 0;
         $this->output($this->wrapResult('summary', $data, $request->apiKey));
