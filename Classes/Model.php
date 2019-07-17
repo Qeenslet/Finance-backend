@@ -133,7 +133,7 @@ class Model
     public function insert($table, Array $insertion)
     {
         try {
-            $SQL = 'INSERT INTO `' . $table . '` ' . $this->prepareInsert($insertion);
+            $SQL = 'INSERT INTO ' . $table . ' ' . $this->prepareInsert($insertion);
             $this->pdo->prepare($SQL)->execute($insertion);
             return 0;
         } catch (Exception $e) {
@@ -160,12 +160,12 @@ class Model
     public function delete($table, $field, $id){
         try {
             if ($id !== 'all') {
-                $sql = "DELETE FROM `" . strval($table) . "` WHERE {$field} = :id";
+                $sql = "DELETE FROM " . strval($table) . " WHERE {$field} = :id";
                 $stmt = $this->pdo->prepare($sql);
                 $stmt->bindParam(':id', $id);
                 $stmt->execute();
             } else {
-                $sql = "DELETE FROM `" . strval($table) . "` WHERE {$field} IS NOT NULL";
+                $sql = "DELETE FROM " . strval($table) . " WHERE {$field} IS NOT NULL";
                 $this->pdo->exec($sql);
             }
             return true;
