@@ -176,6 +176,27 @@ class Controller
 
     public function generateAPIKey()
     {
-        echo 'HERE I do generate API key!!!';
+        echo 'HERE I do generate API key!!! Key is: ' . $this->generateRandomKey();
+    }
+
+
+    private function generateRandomKey($length = 24)
+    {
+        if (function_exists('random_bytes')) {
+            return bin2hex(random_bytes($length));
+        }
+        if (function_exists('openssl_random_pseudo_bytes')) {
+            return bin2hex(openssl_random_pseudo_bytes($length));
+        }
+        $date = new DateTime();
+        $rand = rand(500, 6000);
+        return md5(md5($date->format('Y-m-d H:i:s') . ($rand * $rand) . $date->format('l \t\h\e jS')));
+    }
+
+
+    public function generateKeyJson()
+    {
+        $result = ['api_key' => $this->generateRandomKey()];
+        $this->output($result);
     }
 }
