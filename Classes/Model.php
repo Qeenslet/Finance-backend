@@ -188,4 +188,11 @@ class Model
             throw new Exception($e->getMessage(), $e->getCode());
         }
     }
+
+
+    public function truncateRepo($externalKey)
+    {
+        $this->delete('deleted', 'external_key', $externalKey);
+        $this->delete('expenses', 'external_key', $externalKey);
+    }
 }

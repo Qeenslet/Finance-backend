@@ -8,6 +8,7 @@ $router->addAPIRoute('/entries', 'actionEntries');
 $router->addAPIRoute('/total', 'actionTotal');
 $router->addAPIRoute('/entries/ids', 'actionAllIds');
 $router->addAPIRoute('/summary', 'actionSummary');
+$router->addAPIRoute('/clear', 'actionClearRepo');
 //General routes
 $router->addRoute('/', 'actionIndex');
 $router->addRoute('/generate', 'generateAPIKey');

@@ -218,4 +218,13 @@ class Controller
         $result = ['api_key' => $this->generateRandomKey()];
         $this->output($result);
     }
+
+
+
+    public function clearRepo(Request $request)
+    {
+        if (!empty($request->getDelete())) {
+            $this->model->truncateRepo($request->apiKey);
+        }
+    }
 }
