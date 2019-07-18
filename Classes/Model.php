@@ -192,7 +192,13 @@ class Model
 
     public function truncateRepo($externalKey)
     {
-        $this->delete('deleted', 'external_key', $externalKey);
-        $this->delete('expenses', 'external_key', $externalKey);
+        try{
+            $this->delete('deleted', 'external_key', $externalKey);
+            $this->delete('expenses', 'external_key', $externalKey);
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+
     }
 }

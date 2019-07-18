@@ -224,7 +224,14 @@ class Controller
     public function clearRepo(Request $request)
     {
         if (!empty($request->getDelete())) {
-            $this->model->truncateRepo($request->apiKey);
+            if ($this->model->truncateRepo($request->apiKey)) {
+
+                $this->output($this->wrapResult('result', 'ok', $request->apiKey));
+            } else {
+                $this->handleError(new Exception('some fucking problem happened', 666));
+            }
         }
+        $this->actionSummary($request);
+
     }
 }
