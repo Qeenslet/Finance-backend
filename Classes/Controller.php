@@ -221,7 +221,7 @@ class Controller
 
 
 
-    public function clearRepo(Request $request)
+    public function actionClearRepo(Request $request)
     {
         if (!empty($request->getDelete())) {
             if ($this->model->truncateRepo($request->apiKey)) {
