@@ -68,7 +68,16 @@ class Controller
             if (is_array($request->getDelete())) {
                 foreach ($request->getDelete() as $k => $id) {
                     try{
-                        $this->model->delete('expenses', 'expense_id', $id['expense_id']);
+                        $this->model->delete('expenses', ['expense_id', 'external_key'], [$id['expense_id'], $request->apiKey]);
+                        $check = $this->model->fetchOne("SELECT expense_id FROM deleted
+                                                                WHERE external_key = :key
+                                                                AND expense_id = :id", ['key' => $request->apiKey,
+                            'id' => $id['expense_id']]);
+                        if (!$check) {
+                            $id['external_key'] = $request->apiKey;
+                            $this->model->insert('deleted', $id);
+                        }
+
                     } catch (Exception $e) {
                         $errors[] = $e->getMessage();
                     }
@@ -90,7 +99,12 @@ class Controller
                                                      expense_sum
                                               FROM expenses 
                                               WHERE external_key = :key", $request->getQueryKey());
-        $this->output($this->wrapResult('entries', $data, $request->apiKey));
+        $data2 = $this->model->fetchAll("SELECT expense_id, 
+                                                      delete_day 
+                                               FROM deleted 
+                                               WHERE external_key = :key", $request->getQueryKey());
+        $result = ['real' => $data, 'deleted' => $data2];
+        $this->output($this->wrapResult('entries', $result, $request->apiKey));
     }
 
 
@@ -181,6 +195,7 @@ class Controller
     public function generateAPIKey()
     {
         echo 'HERE I do generate API key!!! Key is: ' . $this->generateRandomKey();
+        //$this->model->delete('deleted', ['expense_id', 'external_key'], ['atdphiod5o2019-07-17', 'mytestenvironment2019-07-11']);
     }
 
 

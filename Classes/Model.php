@@ -74,6 +74,7 @@ class Model
                                                                expense_categ TEXT NOT NULL, 
                                                                expense_descr TEXT, 
                                                                expense_sum TEXT NOT NULL)');
+            $this->pdo->exec('CREATE TABLE if NOT EXISTS deleted (expense_id TEXT NOT NULL, delete_day TEXT NOT NULL, external_key TEXT NOT NULL )');
         } catch (PDOException $e) {
             throw new \PDOException($e->getMessage(), (int)$e->getCode());
         }
@@ -159,14 +160,28 @@ class Model
      */
     public function delete($table, $field, $id){
         try {
-            if ($id !== 'all') {
-                $sql = "DELETE FROM " . strval($table) . " WHERE {$field} = :id";
+            if (is_array($field) && is_array($id) && count($field) == count($id) && isset($field[0])) {
+                $sql = "DELETE FROM " . strval($table) . " WHERE";
+                foreach ($field as $k => $one) {
+                    if ($k) {
+                        $sql .= " AND {$one} = ?";
+                    } else {
+                        $sql .= " {$one} = ?";
+                    }
+
+                }
                 $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':id', $id);
-                $stmt->execute();
+                $stmt->execute($id);
             } else {
-                $sql = "DELETE FROM " . strval($table) . " WHERE {$field} IS NOT NULL";
-                $this->pdo->exec($sql);
+                if ($id !== 'all') {
+                    $sql = "DELETE FROM " . strval($table) . " WHERE {$field} = :id";
+                    $stmt = $this->pdo->prepare($sql);
+                    $stmt->bindParam(':id', $id);
+                    $stmt->execute();
+                } else {
+                    $sql = "DELETE FROM " . strval($table) . " WHERE {$field} IS NOT NULL";
+                    $this->pdo->exec($sql);
+                }
             }
             return true;
         } catch (Exception $e) {
