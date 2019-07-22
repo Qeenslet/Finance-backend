@@ -239,4 +239,26 @@ class Controller
         $this->actionSummary($request);
 
     }
+
+
+    public function actionOperations(Request $request)
+    {
+        if (!empty($request->getPost())) {
+            $chunk_key = $this->generateRandomKey(32);
+            foreach ($request->getPost() as $operation) {
+                $operation['chunk_key'] = $chunk_key;
+                $operation['external_key'] = $request->apiKey;
+                $raw = json_decode($operation['operation_data']);
+                $raw['chunk_key'] = $chunk_key;
+                $operation['operation_data'] = json_encode($raw);
+                $this->model->insert('operations', $operation);
+                $this->model->executeOpearion($operation);
+            }
+            $this->model->insert('chunks', ['chunk_key' => $chunk_key, 'external_key' => $request->apiKey]);
+            $this->output($this->wrapResult('chunk_key', $chunk_key, $request->apiKey));
+            return;
+        }
+        $data = $this->model->fetchAll('SELECT * FROM operations WHERE external_key = :key', $request->getQueryKey());
+        $this->output($this->wrapResult('operations', $data, $request->apiKey));
+    }
 }
