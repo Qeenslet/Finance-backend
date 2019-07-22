@@ -39,6 +39,7 @@ class Model
     private function connect(Array $settings, $sqlite = false)
     {
         if (!$sqlite) {
+            $autoIncremet = 'INT AUTO_INCREMENT';
             if (!empty($settings['port'])) {
                 $dsn = "{$settings['type']}:host={$settings['host']};port={$settings['port']};dbname={$settings['db']}";
             } else {
@@ -46,6 +47,9 @@ class Model
             }
             if ($settings['charset'] && $settings['type'] !== 'pgsql') {
                 $dsn .= ";charset={$settings['charset']}";
+            }
+            if ($settings['type'] === 'pgsql') {
+                $autoIncremet = 'SERIAL';
             }
 
             $options = [
@@ -75,6 +79,9 @@ class Model
                                                                expense_descr TEXT, 
                                                                expense_sum TEXT NOT NULL)');
             $this->pdo->exec('CREATE TABLE if NOT EXISTS deleted (expense_id TEXT NOT NULL, delete_day TEXT NOT NULL, external_key TEXT NOT NULL )');
+            $this->pdo->exec('CREATE TABLE IF NOT EXISTS chunks (id ' . $autoIncremet . ' PRIMARY KEY, 
+                                                                          chunk_key TEXT NOT NULL, 
+                                                                          date_created DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)');
         } catch (PDOException $e) {
             throw new \PDOException($e->getMessage(), (int)$e->getCode());
         }

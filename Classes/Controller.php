@@ -30,6 +30,9 @@ class Controller
         echo file_get_contents('index.html');
     }
 
+    /**
+     * @param Request $request
+     */
     public function actionEntries(Request $request)
     {
         if (!empty($request->getPost())){
@@ -227,8 +230,10 @@ class Controller
             if ($this->model->truncateRepo($request->apiKey)) {
 
                 $this->output($this->wrapResult('result', 'ok', $request->apiKey));
+                return;
             } else {
                 $this->handleError(new Exception('some fucking problem happened', 666));
+                return;
             }
         }
         $this->actionSummary($request);
