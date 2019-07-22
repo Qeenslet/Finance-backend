@@ -81,7 +81,7 @@ class Model
             $this->pdo->exec('CREATE TABLE if NOT EXISTS deleted (expense_id TEXT NOT NULL, delete_day TEXT NOT NULL, external_key TEXT NOT NULL )');
             $this->pdo->exec('CREATE TABLE IF NOT EXISTS chunks (id ' . $autoIncremet . ' PRIMARY KEY, 
                                                                           chunk_key TEXT NOT NULL, 
-                                                                          date_created DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)');
+                                                                          date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)');
         } catch (PDOException $e) {
             throw new \PDOException($e->getMessage(), (int)$e->getCode());
         }
