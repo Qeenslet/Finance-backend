@@ -80,8 +80,14 @@ class Model
                                                                expense_sum TEXT NOT NULL)');
             $this->pdo->exec('CREATE TABLE if NOT EXISTS deleted (expense_id TEXT NOT NULL, delete_day TEXT NOT NULL, external_key TEXT NOT NULL )');
             $this->pdo->exec('CREATE TABLE IF NOT EXISTS chunks (id ' . $autoIncremet . ' PRIMARY KEY, 
-                                                                          chunk_key TEXT NOT NULL, 
+                                                                          chunk_key TEXT NOT NULL,
+                                                                          external_key TEXT NOT NULL, 
                                                                           date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)');
+            $this->pdo->exec('CREATE TABLE IF NOT EXISTS operations (
+                                                                   external_key TEXT NOT NULL,
+                                                                   command TEXT NOT NULL,
+                                                                   chunk_key TEXT NOT NULL, 
+                                                                   operation_data TEXT NOT NULL)');
         } catch (PDOException $e) {
             throw new \PDOException($e->getMessage(), (int)$e->getCode());
         }
@@ -207,5 +213,17 @@ class Model
             return false;
         }
 
+    }
+
+
+    public function executeOpearion(Array & $operation)
+    {
+        $raw = json_decode($operation['operation_data'], true);
+        $raw['external_key'] = $operation['external_key'];
+        if ($operation['command'] === 'ADD') {
+            $this->insert('expenses', $raw);
+        } elseif ($operation['command'] === 'DEL') {
+            $this->delete('expenses', ['expense_id', 'external_key'], [$raw['expense_id'], $raw['external_key']]);
+        }
     }
 }
