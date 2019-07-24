@@ -9,6 +9,10 @@ $router->addAPIRoute('/total', 'actionTotal');
 $router->addAPIRoute('/entries/ids', 'actionAllIds');
 $router->addAPIRoute('/summary', 'actionSummary');
 $router->addAPIRoute('/clear', 'actionClearRepo');
+$router->addAPIRoute('/operations', 'actionOperations');
+$router->addAPIRoute('/chunk/{ID}', 'actionChunk');
+$router->addAPIRoute('/next_chunks/{ID}', 'actionNextChunks');
+$router->addAPIRoute('/chunks', 'actionChunks');
 //General routes
 $router->addRoute('/', 'actionIndex');
 $router->addRoute('/generate', 'generateAPIKey');

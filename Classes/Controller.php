@@ -27,6 +27,8 @@ class Controller
 
     public function actionIndex()
     {
+        //$aaa = $this->model->fetchAll("SELECT * FROM chunks");
+        //echo '<pre>'; print_r($aaa);
         echo file_get_contents('index.html');
     }
 
@@ -164,6 +166,7 @@ class Controller
     public function handleError(Exception $e)
     {
         $data['error'] = $e->getMessage();
+        $data['trace'] = $e->getTrace();
         $data['code'] = $e->getCode();
         $this->output($data);
     }
@@ -202,6 +205,11 @@ class Controller
     }
 
 
+    /**
+     * @param int $length
+     * @return string
+     * @throws Exception
+     */
     private function generateRandomKey($length = 24)
     {
         if (function_exists('random_bytes')) {
@@ -215,7 +223,9 @@ class Controller
         return md5(md5($date->format('Y-m-d H:i:s') . ($rand * $rand) . $date->format('l \t\h\e jS')));
     }
 
-
+    /**
+     * @throws Exception
+     */
     public function generateKeyJson()
     {
         $result = ['api_key' => $this->generateRandomKey()];
@@ -244,21 +254,77 @@ class Controller
     public function actionOperations(Request $request)
     {
         if (!empty($request->getPost())) {
-            $chunk_key = $this->generateRandomKey(32);
-            foreach ($request->getPost() as $operation) {
-                $operation['chunk_key'] = $chunk_key;
-                $operation['external_key'] = $request->apiKey;
-                $raw = json_decode($operation['operation_data']);
-                $raw['chunk_key'] = $chunk_key;
-                $operation['operation_data'] = json_encode($raw);
-                $this->model->insert('operations', $operation);
-                $this->model->executeOpearion($operation);
+            try{
+                $chunk_key = $this->generateRandomKey(32);
+                foreach ($request->getPost() as $operation) {
+                    $operation['chunk_key'] = $chunk_key;
+                    $operation['external_key'] = $request->apiKey;
+                    $raw = json_decode($operation['operation_data'], true);
+                    $operation['operation_data'] = json_encode($raw);
+                    $this->model->insert('operations', $operation);
+                    $this->model->executeOpearion($operation);
+                }
+                $this->model->insert('chunks', ['chunk_key' => $chunk_key, 'external_key' => $request->apiKey]);
+                $this->output($this->wrapResult('chunk_key', $chunk_key, $request->apiKey));
+                return;
+            } catch (Exception $e){
+                $this->handleError($e);
+                return;
             }
-            $this->model->insert('chunks', ['chunk_key' => $chunk_key, 'external_key' => $request->apiKey]);
-            $this->output($this->wrapResult('chunk_key', $chunk_key, $request->apiKey));
-            return;
+
         }
         $data = $this->model->fetchAll('SELECT * FROM operations WHERE external_key = :key', $request->getQueryKey());
         $this->output($this->wrapResult('operations', $data, $request->apiKey));
+    }
+
+
+    /**
+     * @param Request $request
+     */
+    public function actionChunk(Request $request)
+    {
+        $param = $request->apiParam;
+        if ($param) {
+            $data = $this->model->fetchAll('SELECT command,
+                                                          chunk_key,
+                                                          operation_data
+                                                  FROM operations WHERE external_key = :key
+                                                  AND chunk_key = :chunk', array_merge($request->getQueryKey(), ['chunk' => $param]));
+            $this->output($this->wrapResult('operations', $data, $request->apiKey));
+            return;
+        }
+        $this->handleError(new Exception('Wrong API call params', 400));
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function actionNextChunks(Request $request)
+    {
+        $param = $request->apiParam;
+        if ($param) {
+            $data = $this->model->fetchAll('SELECT chunk_key 
+                                                  FROM chunks 
+                                                  WHERE id > (SELECT id 
+                                                              FROM chunks 
+                                                              WHERE chunk_key = :chunk
+                                                              AND external_key = :key1) AND external_key = :key2
+                                                              ORDER BY id', ['chunk' => $request->apiParam, 'key1' => $request->apiKey, 'key2' => $request->apiKey]);
+            $this->output($this->wrapResult('chunks', $data, $request->apiKey));
+            return;
+        }
+        $this->handleError(new Exception('Wrong API call params', 400));
+    }
+
+
+
+    public function actionChunks(Request $request)
+    {
+        $data = $this->model->fetchAll('SELECT chunk_key 
+                                                  FROM chunks
+                                               WHERE external_key = :key
+                                                 ORDER BY id', $request->getQueryKey());
+        $this->output($this->wrapResult('chunks', $data, $request->apiKey));
+        return;
     }
 }

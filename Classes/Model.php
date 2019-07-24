@@ -221,6 +221,7 @@ class Model
         $raw = json_decode($operation['operation_data'], true);
         $raw['external_key'] = $operation['external_key'];
         if ($operation['command'] === 'ADD') {
+            unset($raw['chunk_key']);
             $this->insert('expenses', $raw);
         } elseif ($operation['command'] === 'DEL') {
             $this->delete('expenses', ['expense_id', 'external_key'], [$raw['expense_id'], $raw['external_key']]);

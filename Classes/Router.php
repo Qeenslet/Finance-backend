@@ -8,6 +8,7 @@ class Router
     private $api_routes = [];
     private $routes = [];
     private $controller;
+    private $api_routes_id = [];
 
     public function __construct(Controller $controller)
     {
@@ -17,9 +18,17 @@ class Router
 
     public function addAPIRoute($route, $action)
     {
-        $route = str_replace('/', '\/', $route);
-        $route = '/^\/(.*)' . $route . '$/';
-        $this->api_routes[$route] = $action;
+        if (strpos($route, '{ID}')){
+            $route = str_replace('/', '\/', $route);
+            $route = str_replace('{ID}', '(.*)', $route);
+            $route = '/^\/(.*)' . $route . '$/';
+            $this->api_routes_id[$route] = $action;
+        } else {
+            $route = str_replace('/', '\/', $route);
+            $route = '/^\/(.*)' . $route . '$/';
+            $this->api_routes[$route] = $action;
+        }
+
     }
 
     public function addRoute($route, $action)
@@ -32,6 +41,13 @@ class Router
      */
     private function parseRoute()
     {
+        foreach ($this->api_routes_id as $rt => $act) {
+            if (preg_match($rt, $this->uri, $matches)) {
+                Logger::log('Incoming: ' . $this->uri);
+                $this->controller->{$act}(new Request($matches[1], $matches[2]));
+                return;
+            }
+        }
         foreach ($this->api_routes as $route => $action) {
             if (preg_match($route, $this->uri, $matches)) {
                 Logger::log('Incoming: ' . $this->uri);

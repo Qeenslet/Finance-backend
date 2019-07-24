@@ -7,8 +7,9 @@ class Request
     private $apiKey;
     private $post = [];
     private $delete = [];
+    private $idParam = null;
 
-    public function __construct($apiKey)
+    public function __construct($apiKey, $idParam = null)
     {
         $this->apiKey = $apiKey;
         if (!empty($_POST)) $this->post = $_POST;
@@ -27,6 +28,7 @@ class Request
             }
 
         }
+        $this->idParam = $idParam;
         $this->logRequest();
 
     }
@@ -44,7 +46,7 @@ class Request
     public function __get($name)
     {
        if ($name === 'apiKey') return $this->apiKey;
-       else if ($name === 'post') return $this->post;
+       elseif ($name === 'apiParam') return $this->idParam;
        else return '';
     }
 
@@ -57,6 +59,6 @@ class Request
 
     private function logRequest()
     {
-       Logger::log($_SERVER['REQUEST_METHOD'] . ' ' . $this->apiKey);
+       Logger::log($_SERVER['REQUEST_METHOD'] . ' ' . $this->apiKey . ' && ' . $this->idParam);
     }
 }

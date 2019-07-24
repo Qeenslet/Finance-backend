@@ -14,4 +14,22 @@ class Logger
         fwrite($handle, $line);
         fclose($handle);
     }
+
+
+    public static function varDumpIt($something)
+    {
+        ob_start();
+        var_dump($something);
+        $html = ob_get_clean();
+        self::log($html);
+    }
+
+
+    public static function print_rIt($something)
+    {
+        ob_start();
+        print_r($something);
+        $html = ob_get_clean();
+        self::log($html);
+    }
 }
