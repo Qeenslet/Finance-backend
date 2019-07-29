@@ -343,7 +343,7 @@ class Controller
                                                       setting_key, 
                                                       setting_value 
                                                FROM settings 
-                                               WHERE external_key = ?', $request->getQueryKey());
+                                               WHERE external_key = :key', $request->getQueryKey());
 
         $this->output($this->wrapResult('settings', $data, $request->apiKey));
     }
