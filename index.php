@@ -13,6 +13,7 @@ $router->addAPIRoute('/operations', 'actionOperations');
 $router->addAPIRoute('/chunk/{ID}', 'actionChunk');
 $router->addAPIRoute('/next_chunks/{ID}', 'actionNextChunks');
 $router->addAPIRoute('/chunks', 'actionChunks');
+$router->addAPIRoute('/settings', 'actionSettings');
 //General routes
 $router->addRoute('/', 'actionIndex');
 $router->addRoute('/generate', 'generateAPIKey');

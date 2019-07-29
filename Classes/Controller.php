@@ -327,4 +327,24 @@ class Controller
         $this->output($this->wrapResult('chunks', $data, $request->apiKey));
         return;
     }
+
+
+
+    public function actionSettings(Request $request)
+    {
+        if (!empty($request->getPost())) {
+            $this->model->delete('settings', 'external_key', $request->apiKey);
+            foreach ($request->getPost() as $setting) {
+                $setting['external_key'] = $request->apiKey;
+                $this->model->insert('settings', $setting);
+            }
+        }
+        $data = $this->model->fetchAll('SELECT section_key, 
+                                                      setting_key, 
+                                                      setting_value 
+                                               FROM settings 
+                                               WHERE external_key = ?', $request->getQueryKey());
+
+        $this->output($this->wrapResult('settings', $data, $request->apiKey));
+    }
 }

@@ -88,6 +88,11 @@ class Model
                                                                    command TEXT NOT NULL,
                                                                    chunk_key TEXT NOT NULL, 
                                                                    operation_data TEXT NOT NULL)');
+            $this->pdo->exec('CREATE TABLE IF NOT EXISTS settings (
+                                                                   external_key TEXT NOT NULL,
+                                                                   section_key TEXT NOT NULL,
+                                                                   setting_key TEXT NOT NULL,
+                                                                   setting_value TEXT NOT NULL)');
         } catch (PDOException $e) {
             throw new \PDOException($e->getMessage(), (int)$e->getCode());
         }
