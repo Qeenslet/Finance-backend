@@ -6,6 +6,8 @@ class Controller
 {
     private $model;
     private $settings;
+    const ADD_ENTRY = 'ADD';
+    const DEL_ENTRY = 'DEL';
 
     public function __construct()
     {
@@ -43,7 +45,7 @@ class Controller
             $alreadyExists = 0;
             try {
                 foreach ($request->getPost() as $entry) {
-                    if ($this->model->validateExpense($entry)){
+                    if ($this->model->validateExpense($entry)) {
                         $check = $this->model->fetchOne("SELECT expense_id FROM expenses
                                                                 WHERE external_key = :key
                                                                 AND expense_id = :id", ['key' => $request->apiKey,
@@ -51,6 +53,9 @@ class Controller
                         if (!$check) {
                             $entry['external_key'] = $request->apiKey;
                             $this->model->insert('expenses', $entry);
+                            $chunkKey = $this->generateRandomKey(32);
+                            $this->saveOperation($request->apiKey, self::ADD_ENTRY, $chunkKey, $entry);
+                            $this->saveChunk($request->apiKey, $chunkKey);
                             $saved++;
                         } else {
                             $alreadyExists++;
@@ -81,6 +86,9 @@ class Controller
                         if (!$check) {
                             $id['external_key'] = $request->apiKey;
                             $this->model->insert('deleted', $id);
+                            $chunkKey = $this->generateRandomKey(32);
+                            $this->saveOperation($request->apiKey, self::DEL_ENTRY, $chunkKey, $id);
+                            $this->saveChunk($request->apiKey, $chunkKey);
                         }
 
                     } catch (Exception $e) {
@@ -264,7 +272,8 @@ class Controller
                     $this->model->insert('operations', $operation);
                     $this->model->executeOpearion($operation);
                 }
-                $this->model->insert('chunks', ['chunk_key' => $chunk_key, 'external_key' => $request->apiKey]);
+                //$this->model->insert('chunks', ['chunk_key' => $chunk_key, 'external_key' => $request->apiKey]);
+                $this->saveChunk($request->apiKey, $chunk_key);
                 $this->output($this->wrapResult('chunk_key', $chunk_key, $request->apiKey));
                 return;
             } catch (Exception $e){
@@ -346,5 +355,24 @@ class Controller
                                                WHERE external_key = :key', $request->getQueryKey());
 
         $this->output($this->wrapResult('settings', $data, $request->apiKey));
+    }
+
+
+
+    private function saveOperation($exteranlKey, $command, $chunkKey, $operationData)
+    {
+        $save = [];
+        $save['external_key'] = $exteranlKey;
+        $save['command'] = $command;
+        $save['chunk_key'] = $chunkKey;
+        $save['operation_data'] = json_encode($operationData);
+        $this->model->insert('operations', $save);
+    }
+
+
+
+    private function saveChunk($externalKey, $chunkKey)
+    {
+        $this->model->insert('chunks', ['chunk_key' => $chunkKey, 'external_key' => $externalKey]);
     }
 }
