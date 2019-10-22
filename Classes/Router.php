@@ -10,6 +10,7 @@ class Router
     private $controller;
     private $api_routes_id = [];
     private $api_key = null;
+    private $restrictedRoutes = [];
 
     public function __construct(Controller $controller)
     {
@@ -58,6 +59,15 @@ class Router
                 return;
             }
         }
+        foreach ($this->restrictedRoutes as $rr => $rAction) {
+            if ($this->uri === $rr) {
+                if (Middleware::check()) {
+                    $this->controller->{$rAction}();
+                } else {
+                    $this->redirect("/login");
+                }
+            }
+        }
         foreach ($this->routes as $r => $a) {
             if ($this->uri === $r) {
                 $this->controller->{$a}();
@@ -79,5 +89,20 @@ class Router
             $this->controller->handleError($e);
         }
 
+    }
+
+
+    public function addRestrictedRoute($route, $action)
+    {
+        $this->restrictedRoutes[$route] = $action;
+    }
+
+    public function redirect($route)
+    {
+        if (array_key_exists($route, $this->routes)) {
+            header("Location:" . $route);
+        } else {
+            header("Location:/");
+        }
     }
 }
