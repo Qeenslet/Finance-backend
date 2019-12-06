@@ -32,17 +32,27 @@ class Request
         $this->logRequest();
 
     }
+
+    /**
+     * @return array|mixed
+     */
     public function getPost()
     {
         return $this->post;
     }
 
-
+    /**
+     * @return array|mixed
+     */
     public function getDelete()
     {
         return $this->delete;
     }
 
+    /**
+     * @param $name
+     * @return string|null
+     */
     public function __get($name)
     {
        if ($name === 'apiKey') return $this->apiKey;
@@ -50,13 +60,22 @@ class Request
        else return '';
     }
 
-
-    public function getQueryKey()
+    /**
+     * @param array|null $array
+     * @return array
+     */
+    public function getQueryKey(Array $array = null)
     {
-        return ['key' => $this->apiKey];
+        $default = ['key' => $this->apiKey];
+        if ($array) {
+            return array_merge($default, $array);
+        }
+        return $default;
     }
 
-
+    /**
+     *
+     */
     private function logRequest()
     {
        Logger::log($_SERVER['REQUEST_METHOD'] . ' ' . $this->apiKey . ' && ' . $this->idParam);

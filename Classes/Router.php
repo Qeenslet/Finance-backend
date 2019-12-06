@@ -45,6 +45,7 @@ class Router
      */
     private function parseRoute()
     {
+        $this->checkPreflightRequest();
         foreach ($this->api_routes_id as $rt => $act) {
             if (preg_match($rt, $this->uri, $matches) && $this->api_key) {
                 Logger::log('Incoming: ' . $this->uri);
@@ -79,5 +80,16 @@ class Router
             $this->controller->handleError($e);
         }
 
+    }
+
+
+    private function checkPreflightRequest()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            header('Access-Control-Allow-Origin: *');
+            header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE');
+            header('Access-Control-Allow-Headers: content-type,finance-key');
+            exit;
+        }
     }
 }

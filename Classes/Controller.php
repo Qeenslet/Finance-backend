@@ -26,7 +26,9 @@ class Controller
         }
     }
 
-
+    /**
+     *
+     */
     public function actionIndex()
     {
         //$aaa = $this->model->fetchAll("SELECT * FROM chunks");
@@ -111,7 +113,8 @@ class Controller
                                                      expense_descr,
                                                      expense_sum
                                               FROM expenses 
-                                              WHERE external_key = :key", $request->getQueryKey());
+                                              WHERE external_key = :key
+                                              ORDER BY expense_date DESC", $request->getQueryKey());
         $data2 = $this->model->fetchAll("SELECT expense_id, 
                                                       delete_day 
                                                FROM deleted 
@@ -119,7 +122,6 @@ class Controller
         $result = ['real' => $data, 'deleted' => $data2];
         $this->output($this->wrapResult('entries', $result, $request->apiKey));
     }
-
 
     /**
      * @param $apiKey
@@ -137,7 +139,6 @@ class Controller
         $this->output($this->wrapResult('total', intval($data), $request->apiKey));
     }
 
-
     /**
      * @param $apiKey
      * @param array $post
@@ -154,7 +155,9 @@ class Controller
         $this->output($this->wrapResult('ids', $data, $request->apiKey));
     }
 
-
+    /**
+     * @param Request $request
+     */
     public function actionSummary(Request $request)
     {
         $total = $this->model->fetchOne("SELECT COUNT(expense_id) 
@@ -170,7 +173,9 @@ class Controller
         $this->output($this->wrapResult('summary', $data, $request->apiKey));
     }
 
-
+    /**
+     * @param Exception $e
+     */
     public function handleError(Exception $e)
     {
         $data['error'] = $e->getMessage();
@@ -205,8 +210,9 @@ class Controller
         echo json_encode($results);
     }
 
-
-
+    /**
+     * @throws Exception
+     */
     public function generateAPIKey()
     {
         echo 'HERE I do generate API key!!! Key is: ' . $this->generateRandomKey();
@@ -241,8 +247,9 @@ class Controller
         $this->output($result);
     }
 
-
-
+    /**
+     * @param Request $request
+     */
     public function actionClearRepo(Request $request)
     {
         if (!empty($request->getDelete())) {
@@ -259,7 +266,9 @@ class Controller
 
     }
 
-
+    /**
+     * @param Request $request
+     */
     public function actionOperations(Request $request)
     {
         if (!empty($request->getPost())) {
@@ -299,7 +308,7 @@ class Controller
                                                           chunk_key,
                                                           operation_data
                                                   FROM operations WHERE external_key = :key
-                                                  AND chunk_key = :chunk', array_merge($request->getQueryKey(), ['chunk' => $param]));
+                                                  AND chunk_key = :chunk', $request->getQueryKey(['chunk' => $param]));
             $this->output($this->wrapResult('operations', $data, $request->apiKey));
             return;
         }
@@ -326,8 +335,9 @@ class Controller
         $this->handleError(new Exception('Wrong API call params', 400));
     }
 
-
-
+    /**
+     * @param Request $request
+     */
     public function actionChunks(Request $request)
     {
         $data = $this->model->fetchAll('SELECT chunk_key 
@@ -338,8 +348,10 @@ class Controller
         return;
     }
 
-
-
+    /**
+     * @param Request $request
+     * @throws Exception
+     */
     public function actionSettings(Request $request)
     {
         if (!empty($request->getPost())) {
@@ -358,8 +370,12 @@ class Controller
         $this->output($this->wrapResult('settings', $data, $request->apiKey));
     }
 
-
-
+    /**
+     * @param $exteranlKey
+     * @param $command
+     * @param $chunkKey
+     * @param $operationData
+     */
     private function saveOperation($exteranlKey, $command, $chunkKey, $operationData)
     {
         $save = [];
@@ -370,10 +386,126 @@ class Controller
         $this->model->insert('operations', $save);
     }
 
-
-
+    /**
+     * @param $externalKey
+     * @param $chunkKey
+     */
     private function saveChunk($externalKey, $chunkKey)
     {
         $this->model->insert('chunks', ['chunk_key' => $chunkKey, 'external_key' => $externalKey]);
+    }
+
+    /**
+     * @param Request $request
+     * @return bool
+     */
+    private function checkMonthYearParam(Request $request)
+    {
+        $regex = '/^(\d{2})-(\d{4})$/';
+        if ($request->apiParam && preg_match($regex, $request->apiParam, $matches)) {
+            if ($matches[1] &&
+                $matches[2] &&
+                intval($matches[1]) < 13 &&
+                intval($matches[2]) > 2000 &&
+                intval($matches[2]) < 2100) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param Request $request
+     * @throws Exception
+     */
+    public function actionEntriesByMonth(Request $request)
+    {
+        if ($this->checkMonthYearParam($request)) {
+            $f = '01-' . $request->apiParam;
+            $dt = new DateTime($f);
+            $last = $dt->format('Y-m-t');
+            $first = $dt->format('Y-m-01');
+            $data = $this->model->fetchAll("SELECT expense_id,
+                                                     expense_date,
+                                                     expense_categ,
+                                                     expense_descr,
+                                                     expense_sum
+                                              FROM expenses
+                                              WHERE external_key = :key
+                                              AND expense_date BETWEEN :start1 AND :end1
+                                              ORDER BY expense_date DESC", $request->getQueryKey(['start1' => $first,
+                                                                                                  'end1' => $last]));
+
+            $result = ['real' => $data];
+            $this->output($this->wrapResult('entries', $result, $request->apiKey));
+            return;
+        } else {
+            $this->handleError(new Exception('Wrong API call params', 400));
+        }
+
+    }
+
+    /**
+     * @param Request $request
+     * @throws Exception
+     */
+    public function actionAverage(Request $request)
+    {
+        if ($this->checkMonthYearParam($request)) {
+            $f = '01-' . $request->apiParam;
+            $dt = new DateTime($f);
+            $limit = $dt->format('Y-m-d');
+            $interval = new DateInterval("P3M");
+            $interval->invert = 1;
+            $dt->add($interval);
+            $limit2 = $dt->format('Y-m-d');
+            $data = $this->model->fetchAll("SELECT expense_categ,
+                                                         expense_sum,
+                                                         expense_date   
+                                                  FROM expenses
+                                                  WHERE external_key = :key
+                                                  AND (expense_date >= :start1 AND expense_date < :end1)",
+                $request->getQueryKey(['end1' => $limit, 'start1' => $limit2]));
+            $result = [];
+            $months = [];
+            foreach ($data as $entry) {
+                $dt = new DateTime($entry['expense_date']);
+                $day = $dt->format('d');
+                $month = $dt->format('m');
+
+                if (!in_array($month, $months)) {
+                    $months[] = $month;
+                }
+
+                for ($i = 1; $i < 32; $i++) {
+                    if (!isset($result[$entry['expense_categ']])) {
+                        $result[$entry['expense_categ']] = [];
+                    }
+                    if (!isset($result[$entry['expense_categ']][$i])) {
+                        $result[$entry['expense_categ']][$i] = 0;
+                    }
+                    $sum = $entry['expense_sum'];
+                    if ($sum < 0) {
+                        $sum *= -1;
+                    }
+                    if ($day <= $i) {
+                        $result[$entry['expense_categ']][$i] += $sum;
+                    }
+                }
+            }
+            $amount = count($months);
+            if ($amount > 1) {
+                foreach ($result as $categ => $sequence) {
+                    foreach ($sequence as $d => $daySum) {
+                        $average = $daySum / $amount;
+                        $result[$categ][$d] = round($average, 2);
+                    }
+                }
+            }
+            $this->output($this->wrapResult('average', $result, $request->apiKey));
+
+        } else {
+            $this->handleError(new Exception('Wrong API call params', 400));
+        }
     }
 }
