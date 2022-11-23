@@ -274,7 +274,6 @@ class Controller
                     $this->model->insert('operations', $operation);
                     $this->model->executeOpearion($operation);
                 }
-                //$this->model->insert('chunks', ['chunk_key' => $chunk_key, 'external_key' => $request->apiKey]);
                 $this->output($this->wrapResult('chunk_key', $chunk_key, $request->apiKey));
                 return;
             } catch (Exception $e){
@@ -381,7 +380,6 @@ class Controller
             'external_key' => $externalKey,
             'id' => $newId
         ];
-        Logger::debugToStdout($updateData);
         $this->model->insert('chunks', $updateData);
     }
 
