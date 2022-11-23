@@ -41,4 +41,12 @@ class Logger
         fwrite($handle, $line);
         fclose($handle);
     }
+
+    public static function debugToStdout($something)
+    {
+        ob_start();
+        print_r($something);
+        $html = ob_get_clean();
+        self::error($html);
+    }
 }

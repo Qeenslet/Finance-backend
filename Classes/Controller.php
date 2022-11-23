@@ -376,11 +376,13 @@ class Controller
     {
         $lastId = (int)$this->getLastChunkId();
         $newId = $lastId + 1;
-        $this->model->insert('chunks', [
+        $updateData = [
             'chunk_key' => $chunkKey,
             'external_key' => $externalKey,
             'id' => $newId
-        ]);
+        ];
+        Logger::debugToStdout($updateData);
+        $this->model->insert('chunks', $updateData);
     }
 
     private function getLastChunkId()
