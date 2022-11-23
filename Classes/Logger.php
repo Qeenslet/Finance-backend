@@ -12,6 +12,7 @@ class Logger
         $dt = new DateTime();
         $line = "\n" . $message . ' ' . $dt->format('d.m.Y H:i:s');
         fwrite($handle, $line);
+        fwrite(STDERR, $line);
         fclose($handle);
     }
 
