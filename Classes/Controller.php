@@ -265,6 +265,7 @@ class Controller
         if (!empty($request->getPost())) {
             try{
                 $chunk_key = $this->generateRandomKey(32);
+                $this->saveChunk($request->apiKey, $chunk_key);
                 foreach ($request->getPost() as $operation) {
                     $operation['chunk_key'] = $chunk_key;
                     $operation['external_key'] = $request->apiKey;
@@ -274,7 +275,6 @@ class Controller
                     $this->model->executeOpearion($operation);
                 }
                 //$this->model->insert('chunks', ['chunk_key' => $chunk_key, 'external_key' => $request->apiKey]);
-                $this->saveChunk($request->apiKey, $chunk_key);
                 $this->output($this->wrapResult('chunk_key', $chunk_key, $request->apiKey));
                 return;
             } catch (Exception $e){
@@ -387,6 +387,6 @@ class Controller
 
     private function getLastChunkId()
     {
-        return $this->model->fetchOne("SELECT id FROM chunks ORDER BY id DESC LIMIT 1") || 0;
+        return $this->model->fetchOne("SELECT MAX(id) FROM chunks");
     }
 }
