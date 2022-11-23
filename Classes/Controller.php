@@ -373,6 +373,17 @@ class Controller
 
     private function saveChunk($externalKey, $chunkKey)
     {
-        $this->model->insert('chunks', ['chunk_key' => $chunkKey, 'external_key' => $externalKey]);
+        $lastId = (int)$this->getLastChunkId();
+        $newId = $lastId + 1;
+        $this->model->insert('chunks', [
+            'chunk_key' => $chunkKey,
+            'external_key' => $externalKey,
+            'id' => $newId
+        ]);
+    }
+
+    private function getLastChunkId()
+    {
+        return $this->model->fetchOne("SELECT id FROM chunks ORDER BY id DESC LIMIT 1") || 0;
     }
 }
