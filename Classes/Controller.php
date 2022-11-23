@@ -176,6 +176,7 @@ class Controller
         $data['error'] = $e->getMessage();
         $data['trace'] = $e->getTrace();
         $data['code'] = $e->getCode();
+        Logger::error($e->getMessage());
         $this->output($data);
     }
 

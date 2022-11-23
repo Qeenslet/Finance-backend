@@ -12,7 +12,6 @@ class Logger
         $dt = new DateTime();
         $line = "\n" . $message . ' ' . $dt->format('d.m.Y H:i:s');
         fwrite($handle, $line);
-        fwrite(STDERR, $line);
         fclose($handle);
     }
 
@@ -32,5 +31,14 @@ class Logger
         print_r($something);
         $html = ob_get_clean();
         self::log($html);
+    }
+
+    public static function error($message)
+    {
+        $handle = fopen('php://stderr', 'w');
+        $dt = new DateTime();
+        $line = "\n" . $message . ' ' . $dt->format('d.m.Y H:i:s');
+        fwrite($handle, $line);
+        fclose($handle);
     }
 }
